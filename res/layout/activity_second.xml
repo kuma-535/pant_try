@@ -1,0 +1,97 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- ImageButton for Settings at the top-right corner -->
+    <ImageButton
+        android:id="@+id/settingsButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Settings"
+        app:srcCompat="@drawable/baseline_settings_24"
+    android:layout_margin="16dp"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    android:elevation="4dp"/>
+
+    <!-- Existing LinearLayout for the rest of the content -->
+    <LinearLayout
+        android:id="@+id/mainContentLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFFDE7"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0">
+
+        <Spinner
+            android:id="@+id/cropSpinner"
+            android:layout_width="200dp"
+            android:layout_height="48dp"
+            android:spinnerMode="dropdown" />
+
+        <Spinner
+            android:id="@+id/varietySpinner"
+            android:layout_width="200dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="16dp"
+            android:spinnerMode="dropdown" />
+
+        <TextView
+            android:id="@+id/tvDatePicker"
+            android:layout_width="250dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="16dp"
+            android:background="@android:color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="12dp"
+            android:text="@string/select_sowing_date"
+            android:textAlignment="center"
+            android:textColor="#000" />
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:contentDescription="Selected Image"
+            android:scaleType="centerCrop" />
+
+        <Button
+            android:id="@+id/btnCaptureImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:text="@string/capture_image" />
+
+        <Button
+            android:id="@+id/btnUpload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:text="@string/upload_image" />
+
+        <Button
+            android:id="@+id/btnSendData"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:text="@string/send_data" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
