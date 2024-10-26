@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">triall</string>
+    <string name="select_sowing_date">Select Sowing Date</string>
+    <string name="capture_image">Capture Image</string>
+    <string name="upload_image">Upload Image</string>
+    <string name="send_data">Send Data</string>
+    <string name="triall">Triall</string>
+
+</resources>
