@@ -19,14 +19,14 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d("SplashActivity", "SplashActivity started");
-        applySavedLanguage();
         setContentView(R.layout.activity_splash);  // Make sure you're using the correct layout
 
         // Delay for 1 second
         new Handler().postDelayed(() -> {
             // Check if language is already selected
             SharedPreferences sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
-            String selectedLanguage = sharedPreferences.getString("selectedLanguage", "en");
+            String selectedLanguage = sharedPreferences.getString("selectedLanguage", null);
+            applySavedLanguage(selectedLanguage);
 
             if (selectedLanguage != null) {
                 // Language already selected, go to SecondActivity
@@ -42,20 +42,17 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     // Method to apply saved language from SharedPreferences on app start
-    private void applySavedLanguage() {
-        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        String languageCode = prefs.getString("selectedLanguage", "en"); // Use "selectedLanguage" for consistency
-        Log.d("LanguageSelection", "Applying language code: " + languageCode);
-        Locale locale = new Locale(languageCode);
+    private void applySavedLanguage(String selectedLanguage) {
+        if (selectedLanguage == null) {
+            Log.d("LanguageSelection", "No language selected; skipping language application.");
+            return; // Skip if no language has been selected
+        }
+        Locale locale = new Locale(selectedLanguage);
         Locale.setDefault(locale);
         Configuration config = getResources().getConfiguration();
         config.setLocale(locale);
         config.setLayoutDirection(locale); // Set layout direction for RTL languages if needed
         getResources().updateConfiguration(config, getResources().getDisplayMetrics());
-        // Reload the activity to apply the new locale
-        //recreate();
-
-
     }
 }
 

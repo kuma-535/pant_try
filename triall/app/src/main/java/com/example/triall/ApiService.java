@@ -11,14 +11,15 @@ import retrofit2.http.Part;
 import retrofit2.http.GET;
 import java.util.List;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ApiService {
 
     @GET("/crops/")
-    Call<List<Crop>> getCrops();
+    Call<List<Crop>> getCrops(@Query("lang") String languageCode);
 
     @GET("varieties/{cropId}/")
-    Call<List<Variety>> getVarieties(@Path("cropId") int cropId);
+    Call<List<Variety>> getVarieties(@Path("cropId") int cropId, @Query("lang") String language);
 
     @GET("/get_languages/")
     Call<List<Language>> getLanguages();
@@ -37,7 +38,8 @@ public interface ApiService {
             @Part("selectedVarietyId") RequestBody selectedVarietyId,
             @Part("selectedSowingDate") RequestBody selectedSowingDate,
             //@Field("selectedSowingDate") RequestBody selectedSowingDate,
-            @Part MultipartBody.Part image
+            @Part MultipartBody.Part image,
+            @Part("receivedLanguageCode") RequestBody receivedLanguageCode
     );
 
     @FormUrlEncoded
@@ -45,4 +47,7 @@ public interface ApiService {
     Call<SowingDateResponse> sendSowingDate(
             @Field("sowingDate") long sowingDate
     );
+
+    @GET("get_disease_message/")  // Endpoint to get the disease message
+    Call<DiseasePredictionResponse> getDiseaseMessage();
 }

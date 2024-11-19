@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">आपका ऐप नाम</string>
-    <string name="capture_image">छवि कैप्चर करें</string>
-    <string name="upload_image">छवि अपलोड करें</string>
-    <string name="send_data">डेटा भेजें</string>
-    <string name="select_sowing_date">बुआई की तारीख चुनें</string>
-</resources>

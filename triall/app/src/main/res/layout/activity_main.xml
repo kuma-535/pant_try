@@ -22,7 +22,7 @@
         android:id="@+id/selectLanguageButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Select"
+        android:text="@string/select_language"
         android:textSize="16sp"
         android:layout_gravity="center"/>
 

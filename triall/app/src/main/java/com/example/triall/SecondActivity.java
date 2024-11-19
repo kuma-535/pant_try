@@ -80,6 +80,7 @@ public class SecondActivity extends AppCompatActivity {
     private ApiService apiService;
     private Uri selectedImageUri;
     private String creationDate;
+    private String receivedLanguageCode;
     private double latitude;
     private double longitude;
     private File photoFile; // File to store captured image
@@ -119,11 +120,12 @@ public class SecondActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Retrieve the language code passed from MainActivity
-        String receivedLanguageCode = getIntent().getStringExtra("selectedLanguage");
+        receivedLanguageCode = getIntent().getStringExtra("selectedLanguage");
+
+
 
         // Log the received language code to check if it's correct
         Log.d("SecondActivity", "Received Language Code: " + receivedLanguageCode);
-        applySavedLanguage();
         setContentView(R.layout.activity_second);
 
         settingsButton = findViewById(R.id.settingsButton);
@@ -170,8 +172,6 @@ public class SecondActivity extends AppCompatActivity {
         varietySpinner = findViewById(R.id.varietySpinner); // Initialize varietySpinner
 
         tvDatePicker = findViewById(R.id.tvDatePicker);
-        //selectedSowingDate="";
-
         tvDatePicker.setOnClickListener(v -> showDatePickerDialog());
 
 
@@ -215,6 +215,10 @@ public class SecondActivity extends AppCompatActivity {
             if (selectedImageUri != null && creationDate != null) {
                 if (latitude != 0.0 && longitude != 0.0) {
                     sendImageMetadata();  // Proceed with sending the data
+
+                    // After sending the image metadata, navigate to ThirdActivity
+                    Intent intent = new Intent(SecondActivity.this, ThirdActivity.class);
+                    startActivity(intent);  // Start ThirdActivity
                 } else {
                     Toast.makeText(this, "Cannot send data. Location data is missing or invalid.", Toast.LENGTH_LONG).show();
                 }
@@ -223,19 +227,11 @@ public class SecondActivity extends AppCompatActivity {
             }
         });
     }
-
-    private void applySavedLanguage() {
-        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        String languageCode = prefs.getString("app_language", "en"); // Default to English if not set
-        Locale locale = new Locale(languageCode);
-        Locale.setDefault(locale);
-        Configuration config = getResources().getConfiguration();
-        config.setLocale(locale);
-        config.setLayoutDirection(locale); // RTL support if needed
-        getResources().updateConfiguration(config, getResources().getDisplayMetrics());
-    }
     private void fetchCrops() {
-        apiService.getCrops().enqueue(new Callback<List<Crop>>() {
+        String languageCode = receivedLanguageCode; // Get the language code sent from MainActivity
+
+        // Pass the language code to the API call
+        apiService.getCrops(languageCode).enqueue(new Callback<List<Crop>>() {
             @Override
             public void onResponse(Call<List<Crop>> call, Response<List<Crop>> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -250,7 +246,7 @@ public class SecondActivity extends AppCompatActivity {
                         @Override
                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                             Crop selectedCrop = (Crop) parent.getItemAtPosition(position);
-                            if (position != 0) { // Exclude the default item
+                            if (position >= 0) { // Exclude the default item
                                 selectedCropId = selectedCrop.getId(); // Store the selected crop ID
                                 fetchVarieties(selectedCropId); // Call to fetch varieties based on selected crop
                             } else {
@@ -275,14 +271,13 @@ public class SecondActivity extends AppCompatActivity {
         });
     }
 
+
     private void fetchVarieties(int cropId) {
-        apiService.getVarieties(cropId).enqueue(new Callback<List<Variety>>() {
+        apiService.getVarieties(cropId, receivedLanguageCode).enqueue(new Callback<List<Variety>>() {
             @Override
             public void onResponse(Call<List<Variety>> call, Response<List<Variety>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     varietyList = response.body();
-                    //varietyList.add(0, new Variety("Select Language", ""));
-                    //varietyList.add(0, new Variety("Select Variety")); // Add default item
 
                     ArrayAdapter<Variety> adapter = new ArrayAdapter<>(SecondActivity.this,
                             android.R.layout.simple_spinner_item, varietyList);
@@ -293,9 +288,11 @@ public class SecondActivity extends AppCompatActivity {
                     varietySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                         @Override
                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                            Log.e("Position", "Selection position"+position);
                             Variety selectedVariety = (Variety) parent.getItemAtPosition(position);
-                            if (position != 0) { // Exclude the default item
+                            if (position >= 0) { // Exclude the default item
                                 selectedVarietyId = selectedVariety.getId(); // Store the selected variety ID
+                                Log.e("selectedVarietyId", "selectedVarietyId is "+selectedVariety.getId());
                             } else {
                                 selectedVarietyId = -1; // Reset if no valid variety is selected
                             }
@@ -480,11 +477,15 @@ public class SecondActivity extends AppCompatActivity {
 
     private void sendImageMetadata() {
 
-        if (selectedSowingDate == 0) {
+        if (selectedSowingDate == 0||selectedCropId ==-1||selectedVarietyId==-1) {
             Log.e("SowingDateError", "Sowing date is empty before sending");
+            Log.e("CropIdError", "CropId"+selectedCropId);
+            Log.e("CropIdError", "CropId"+selectedVarietyId);
             Toast.makeText(SecondActivity.this, "Please select a sowing date", Toast.LENGTH_SHORT).show();
             return; // Stop sending if the date is not selected
         }
+
+
 
         // Log the values being sent
         Log.d("sendImageMetadata", "Creation Date: " + creationDate);
@@ -503,12 +504,11 @@ public class SecondActivity extends AppCompatActivity {
         RequestBody cropIdBody = RequestBody.create(String.valueOf(selectedCropId), MultipartBody.FORM); // Add crop ID
         RequestBody varietyIdBody = RequestBody.create(String.valueOf(selectedVarietyId), MultipartBody.FORM); // Add variety ID
         RequestBody sowingDateBody = RequestBody.create(String.valueOf(selectedSowingDate), MultipartBody.FORM); // Add sowing date
-
-
+        RequestBody languageCodeBody = RequestBody.create(String.valueOf(receivedLanguageCode), MultipartBody.FORM);
         MultipartBody.Part imagePart = prepareFilePart("image", selectedImageUri);
 
 
-        Call<UploadResponse> call = apiService.uploadImage(creationDateBody, latitudeBody, longitudeBody,cropIdBody,varietyIdBody,sowingDateBody,imagePart);
+        Call<UploadResponse> call = apiService.uploadImage(creationDateBody, latitudeBody, longitudeBody,cropIdBody,varietyIdBody,sowingDateBody,imagePart,languageCodeBody);
 
         call.enqueue(new Callback<UploadResponse>() {
             @Override
