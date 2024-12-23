@@ -1,11 +1,11 @@
 package com.example.triall;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -19,6 +19,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -97,8 +98,6 @@ public class SecondActivity extends AppCompatActivity {
             }
     );
 
-
-
     // Register the activity result launcher for picking an image from the gallery
     private final ActivityResultLauncher<String> pickImageLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
@@ -112,17 +111,17 @@ public class SecondActivity extends AppCompatActivity {
             }
     );
 
-
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Retrieve the language code passed from MainActivity
         receivedLanguageCode = getIntent().getStringExtra("selectedLanguage");
 
-
+        // Fallback to SharedPreferences if the language code is null
+        if (receivedLanguageCode == null) {
+            SharedPreferences sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+            receivedLanguageCode = sharedPreferences.getString("selectedLanguage", null);
+        }
 
         // Log the received language code to check if it's correct
         Log.d("SecondActivity", "Received Language Code: " + receivedLanguageCode);
@@ -148,7 +147,8 @@ public class SecondActivity extends AppCompatActivity {
         retrofit = new Retrofit.Builder()
                 //.baseUrl("http://192.168.29.127:8000/")  // Use your personal machine's IP
                 //.baseUrl("http://10.11.2.153:8000/")  // Use your office machine's IP
-                .baseUrl("http://10.11.2.156:8000/")// Use MoM-CAT machine's IP
+                //.baseUrl("http://10.11.2.156:8000/")// Use MoM-CAT machine's IP
+                .baseUrl("http://14.139.229.39:8000/")
                 .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
@@ -215,10 +215,6 @@ public class SecondActivity extends AppCompatActivity {
             if (selectedImageUri != null && creationDate != null) {
                 if (latitude != 0.0 && longitude != 0.0) {
                     sendImageMetadata();  // Proceed with sending the data
-
-                    // After sending the image metadata, navigate to ThirdActivity
-                    Intent intent = new Intent(SecondActivity.this, ThirdActivity.class);
-                    startActivity(intent);  // Start ThirdActivity
                 } else {
                     Toast.makeText(this, "Cannot send data. Location data is missing or invalid.", Toast.LENGTH_LONG).show();
                 }
@@ -238,8 +234,8 @@ public class SecondActivity extends AppCompatActivity {
                     cropList = response.body();
                     cropList.add(0, new Crop("Select Your Crop")); // Add default item
                     ArrayAdapter<Crop> adapter = new ArrayAdapter<>(SecondActivity.this,
-                            android.R.layout.simple_spinner_item, cropList);
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            R.layout.custom_spinner_item, cropList);
+                    adapter.setDropDownViewResource(R.layout.custom_spinner_dropdown);
                     cropSpinner.setAdapter(adapter);
 
                     cropSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -280,8 +276,8 @@ public class SecondActivity extends AppCompatActivity {
                     varietyList = response.body();
 
                     ArrayAdapter<Variety> adapter = new ArrayAdapter<>(SecondActivity.this,
-                            android.R.layout.simple_spinner_item, varietyList);
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            R.layout.custom_spinner_item, varietyList);
+                    adapter.setDropDownViewResource(R.layout.custom_spinner_dropdown);
                     varietySpinner.setAdapter(adapter);
                     varietySpinner.setEnabled(true); // Enable variety spinner
 
@@ -485,6 +481,19 @@ public class SecondActivity extends AppCompatActivity {
             return; // Stop sending if the date is not selected
         }
 
+        // Create and show an AlertDialog with a spinning wheel
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Sending data to server... Please wait.")
+                .setCancelable(false);
+
+        // Add a spinner (ProgressBar) inside the dialog
+        ProgressBar spinner = new ProgressBar(this);
+        spinner.setIndeterminate(true);
+        builder.setView(spinner);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
 
 
         // Log the values being sent
@@ -513,10 +522,10 @@ public class SecondActivity extends AppCompatActivity {
         call.enqueue(new Callback<UploadResponse>() {
             @Override
             public void onResponse(Call<UploadResponse> call, Response<UploadResponse> response) {
+                dialog.dismiss(); // Dismiss the dialog on response
                 if (response.isSuccessful() && response.body() != null) {
                     Toast.makeText(SecondActivity.this, "Data sent successfully!", Toast.LENGTH_SHORT).show();
-                    UploadResponse uploadResponse = response.body();
-                    Log.d("UploadResponse", "Message: " + uploadResponse.getMessage());
+                    navigateToThirdActivity(response.body().getMessage());
                 } else {
                     Toast.makeText(SecondActivity.this, "Failed to send data", Toast.LENGTH_SHORT).show();
                 }
@@ -527,6 +536,7 @@ public class SecondActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<UploadResponse> call, Throwable t) {
+                dialog.dismiss(); // Dismiss the dialog on failure
                 Toast.makeText(SecondActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 Log.e("UploadError", t.getMessage());
             }
@@ -544,6 +554,14 @@ public class SecondActivity extends AppCompatActivity {
             Toast.makeText(this, "Could not prepare file for upload.", Toast.LENGTH_SHORT).show();
             return null;
         }
+    }
+
+    // Navigate to ThirdActivity
+    private void navigateToThirdActivity(String serverMessage) {
+        Intent intent = new Intent(SecondActivity.this, ThirdActivity.class);
+        intent.putExtra("serverMessage", serverMessage); // Pass server message if needed
+        startActivity(intent);
+        finish(); // Close SecondActivity
     }
 
     // Get file path from URI

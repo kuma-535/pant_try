@@ -1,24 +1,16 @@
 package com.example.triall;
 
 public class DiseasePredictionResponse {
-    private String disease_message;
-    private String error;
+    private String message;
 
-    // Getter and Setter methods
+    // Assuming there is a getter for 'message'
     public String getMessage() {
-        return disease_message;
+        return message;
     }
 
-    public void setDiseaseMessage(String disease_message) {
-        this.disease_message = disease_message;
-    }
-
-    public String getError() {
-        return error;
-    }
-
-    public void setError(String error) {
-        this.error = error;
+    @Override
+    public String toString() {
+        return "DiseasePredictionResponse{message='" + message + "'}";
     }
 }
 

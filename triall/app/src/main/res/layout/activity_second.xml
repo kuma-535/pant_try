@@ -4,6 +4,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- ProgressBar (Centered in the parent layout) -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        android:elevation="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
     <!-- ImageButton for Settings at the top-right corner -->
     <ImageButton
         android:id="@+id/settingsButton"

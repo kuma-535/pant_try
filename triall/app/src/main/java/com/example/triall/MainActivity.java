@@ -47,7 +47,8 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         retrofit = new Retrofit.Builder()
-                .baseUrl("http://10.11.2.156:8000/") // Use your server's IP
+                //.baseUrl("http://10.11.2.156:8000/") // Use your server's IP
+                .baseUrl("http://14.139.229.39:8000/")
                 .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();

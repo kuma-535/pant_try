@@ -23,8 +23,9 @@ public class ApiClient {
             retrofit = new Retrofit.Builder()
                     //.baseUrl("http://192.168.133.249:8000/") // Use your machine's IP
                     //.baseUrl("http://192.168.29.127:8000/") // Laptop's home IP address
-                   .baseUrl("http://10.11.2.156:8000/")  // Use your office machine's IP
+                   //.baseUrl("http://10.11.2.156:8000/")  // Use your office machine's IP
                     //.baseUrl("http://192.168.47.99:8000/")
+                    .baseUrl("http://14.139.229.39:8000/")
 
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
